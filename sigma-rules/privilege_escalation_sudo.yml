@@ -1,0 +1,21 @@
+title: Escalada de Privilegios - Sudo no autorizado
+id: b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e
+status: experimental
+description: Detecta intentos de ejecucion de comandos con sudo por usuarios no autorizados.
+author: Jonathas - Date Un H4ck
+date: 2026/05/17
+references:
+  - https://attack.mitre.org/techniques/T1548/
+logsource:
+  category: syslog
+  product: macos
+detection:
+  selection:
+    log_message|contains: "Unauthorized sudo"
+  condition: selection
+falsepositives:
+  - Administradores probando permisos
+level: critical
+tags:
+  - attack.privilege_escalation
+  - attack.t1548

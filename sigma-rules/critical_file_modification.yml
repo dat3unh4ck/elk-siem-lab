@@ -1,0 +1,22 @@
+title: Integridad - Modificacion de fichero critico
+id: d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a
+status: experimental
+description: Detecta modificaciones no autorizadas en ficheros sensibles del sistema como /etc/passwd o /etc/shadow.
+author: Jonathas - Date Un H4ck
+date: 2026/05/17
+references:
+  - https://attack.mitre.org/techniques/T1098/
+logsource:
+  category: syslog
+  product: macos
+detection:
+  selection:
+    log_message|contains: "Critical file modification"
+  condition: selection
+falsepositives:
+  - Operaciones administrativas legitimas
+  - Actualizaciones del sistema
+level: high
+tags:
+  - attack.persistence
+  - attack.t1098

@@ -1,0 +1,23 @@
+{
+  "index_patterns": ["macos-logs-*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "geoip": {
+          "properties": {
+            "geo": {
+              "properties": {
+                "location": { "type": "geo_point" },
+                "country_name": { "type": "keyword" },
+                "country_iso_code": { "type": "keyword" }
+              }
+            },
+            "ip": { "type": "ip" }
+          }
+        },
+        "alert_ip": { "type": "ip" },
+        "severidad": { "type": "keyword" }
+      }
+    }
+  }
+}

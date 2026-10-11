@@ -1,0 +1,22 @@
+title: Reconocimiento - Escaneo de puertos detectado
+id: e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b
+status: experimental
+description: Detecta actividad de escaneo de puertos desde una IP externa, indicativo de reconocimiento de red previo a un ataque.
+author: Jonathas - Date Un H4ck
+date: 2026/05/17
+references:
+  - https://attack.mitre.org/techniques/T1046/
+logsource:
+  category: syslog
+  product: macos
+detection:
+  selection:
+    log_message|contains: "Port scan"
+  condition: selection
+falsepositives:
+  - Herramientas de monitorizacion de red legitimas
+  - Escaneos de vulnerabilidades programados
+level: high
+tags:
+  - attack.discovery
+  - attack.t1046

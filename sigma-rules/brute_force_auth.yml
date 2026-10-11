@@ -1,0 +1,22 @@
+title: Brute Force - Intentos de autenticacion fallidos
+id: a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
+status: experimental
+description: Detecta multiples intentos de autenticacion fallidos desde una IP externa, indicativo de un ataque de fuerza bruta.
+author: Jonathas - Date Un H4ck
+date: 2026/05/17
+references:
+  - https://attack.mitre.org/techniques/T1110/
+logsource:
+  category: syslog
+  product: macos
+detection:
+  selection:
+    log_message|contains: "Failed authentication"
+  condition: selection
+falsepositives:
+  - Usuarios legítimos que olvidan su contraseña
+  - Cambios de contraseña recientes
+level: critical
+tags:
+  - attack.credential_access
+  - attack.t1110

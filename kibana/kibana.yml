@@ -1,0 +1,13 @@
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "${KIBANA_SYSTEM_PASSWORD}"
+
+# Las tres encryption keys son obligatorias para el motor de deteccion (Detection Engine),
+# las alertas y los Encrypted Saved Objects. Sin ellas Kibana falla al crear reglas SIEM con:
+#   "Unable to create actions client because the Encrypted Saved Objects plugin
+#    is missing encryption key."
+# Minimo 32 caracteres cada una. Se inyectan por variable de entorno desde .env.
+xpack.encryptedSavedObjects.encryptionKey: "${ENCRYPTION_KEY_SAVED_OBJECTS}"
+xpack.security.encryptionKey: "${ENCRYPTION_KEY_SECURITY}"
+xpack.reporting.encryptionKey: "${ENCRYPTION_KEY_REPORTING}"

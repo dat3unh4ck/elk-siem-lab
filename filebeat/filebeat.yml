@@ -1,0 +1,15 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/host/system.log
+      - /var/log/host/install.log
+      - /var/log/host/wifi.log
+    fields:
+      source_host: macbook-pro
+    fields_under_root: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+logging.level: info

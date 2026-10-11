@@ -1,0 +1,19 @@
+# Secretos — nunca al repositorio
+.env
+*.key
+*.pem
+
+# Entornos virtuales de Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Datos y logs locales
+*.log
+data/
+es_data/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
