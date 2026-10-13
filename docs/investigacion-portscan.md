@@ -1,9 +1,9 @@
 # Investigación SOC L1 — Escaneo de puertos (T1046)
 
-**Caso:** reconocimiento activo externo detectado por la regla *Reconocimiento — Escaneo de puertos*.
-**Metodología:** NIST SP 800-61 Rev. 2 — Alerta → Triaje → Análisis → Enriquecimiento → Mapeo ATT&CK → Veredicto → Contención → Lecciones aprendidas.
-
----
+Caso: reconocimiento activo externo detectado por la regla *Reconocimiento — Escaneo de
+puertos*.
+Metodología: NIST SP 800-61 Rev. 2 — Alerta → Triaje → Análisis → Enriquecimiento → Mapeo
+ATT&CK → Veredicto → Contención → Lecciones aprendidas.
 
 ## 1. Alerta recibida
 
@@ -25,7 +25,7 @@
 | Origen | `177.72.82.22`, fuera de los rangos internos | Externo, no inventariado |
 | Horario | Fuera de la ventana de actividad habitual | Refuerza la hipótesis |
 
-**Decisión:** Verdadero Positivo. Prioridad Alta.
+Decido verdadero positivo, prioridad alta.
 
 ## 3. Análisis de logs
 
@@ -51,9 +51,9 @@ Contexto del momento:
 ```
 severidad : "critica"
 ```
-Hay otros eventos críticos simultáneos —fuerza bruta, C2, sudo no autorizado— pero
-**desde IPs distintas y sin solape temporal con los escaneos**. Se concluye que son
-incidentes independientes, no una cadena coordinada.
+Hay otros eventos críticos simultáneos —fuerza bruta, C2, sudo no autorizado—, pero desde IPs
+distintas y sin solape temporal con los escaneos. Concluyo que son incidentes independientes,
+no una cadena coordinada.
 
 ## 4. Enriquecimiento
 
@@ -65,8 +65,8 @@ incidentes independientes, no una cadena coordinada.
 | Ratio | 100 p/s | 150 p/s |
 | Post-escaneo | Sin actividad | Sin actividad |
 
-La geolocalización salió del propio pipeline (etapa 5), sin consultar servicios externos.
-El enriquecimiento con reputación (AbuseIPDB, VirusTotal) está automatizado en
+La geolocalización salió del propio pipeline (etapa 5), sin consultar servicios externos. El
+enriquecimiento con reputación (AbuseIPDB, VirusTotal) está automatizado en
 [`../scripts/enrich_ips.py`](../scripts/enrich_ips.py).
 
 ## 5. Mapeo MITRE ATT&CK
@@ -98,15 +98,15 @@ El enriquecimiento con reputación (AbuseIPDB, VirusTotal) está automatizado en
 
 ## 8. Lecciones aprendidas
 
-**Qué funcionó.** La regla disparó con un MTTD de unos 5 minutos y el enriquecimiento
-GeoIP dio contexto del origen sin depender de herramientas externas.
+Qué funcionó. La regla disparó con un MTTD de unos 5 minutos y el enriquecimiento GeoIP dio
+contexto del origen sin depender de herramientas externas.
 
-**Qué mejorar.**
+Qué mejorar:
 
 - La regla es de coincidencia simple: detecta la cadena `Port scan` en el mensaje, no el
-  comportamiento. Una regla **threshold** (>100 puertos en <10 s agrupando por `alert_ip`)
-  sería mucho más resistente a falsos positivos.
-- Falta una **regla de correlación** que encadene Reconocimiento → Acceso Inicial desde la
-  misma IP. Habría permitido afirmar que estos escaneos eran independientes sin revisarlo a mano.
-- Integrar un feed de **Threat Intelligence** (MISP, OpenCTI) para priorizar por reputación
-  y no solo por firma.
+  comportamiento. Una regla threshold (>100 puertos en <10 s agrupando por `alert_ip`) sería
+  mucho más resistente a falsos positivos.
+- Falta una regla de correlación que encadene Reconocimiento → Acceso Inicial desde la misma
+  IP. Habría permitido afirmar que estos escaneos eran independientes sin revisarlo a mano.
+- Integrar un feed de Threat Intelligence (MISP, OpenCTI) para priorizar por reputación y no
+  solo por firma.

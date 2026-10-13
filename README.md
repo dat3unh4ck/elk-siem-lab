@@ -4,8 +4,8 @@ Laboratorio SOC completo y reproducible sobre Docker Compose: desde que una lín
 entra en crudo hasta que se convierte en una alerta accionable, se enriquece con Threat
 Intelligence y se investiga siguiendo NIST SP 800-61.
 
-No es una consola ya configurada. Cada pieza —ingesta, parsing, enriquecimiento, detección,
-visualización— está construida y documentada aquí.
+No parto de una consola ya hecha. Construí y documenté cada pieza —ingesta, parsing,
+enriquecimiento, detección, visualización— aquí.
 
 ```
                  ┌──────────┐     ┌─────────────────────────────┐     ┌───────────────┐
@@ -32,11 +32,13 @@ visualización— está construida y documentada aquí.
 
 ## Stack
 
-Elasticsearch, Logstash, Kibana y Filebeat **8.17.0** sobre Docker Compose, con
+Elasticsearch, Logstash, Kibana y Filebeat 8.17.0 sobre Docker Compose, con
 `xpack.security` habilitada. Detección con Kibana Security SIEM, Sigma y `sigma-cli`.
-Enriquecimiento en Python 3. Frameworks: MITRE ATT&CK v15, NIST SP 800-61 Rev. 2, Cyber Kill Chain.
+Enriquecimiento en Python 3. Frameworks: MITRE ATT&CK v15, NIST SP 800-61 Rev. 2, Cyber Kill
+Chain.
 
-Probado en macOS ARM64 (M4 Pro, 24 GB RAM). Funciona igual en Linux ajustando `HOST_LOG_DIR`.
+Lo probé en macOS ARM64 (M4 Pro, 24 GB RAM). Funciona igual en Linux ajustando
+`HOST_LOG_DIR`.
 
 ## Puesta en marcha
 
@@ -47,16 +49,17 @@ git clone https://github.com/dat3unh4ck/elk-siem-lab.git
 cd elk-siem-lab
 
 cp .env.example .env
-# Rellena .env. Para las tres encryption keys:  openssl rand -hex 24
+# rellenar .env. Para las tres encryption keys:  openssl rand -hex 24
 
 docker compose up -d          # la primera vez descarga ~2-3 GB de imágenes
 ./scripts/setup.sh            # contraseñas, licencia Trial e index template
 docker compose restart kibana
 ```
 
-Kibana queda en **http://localhost:5601** (usuario `elastic`, la contraseña de tu `.env`).
+Kibana queda en http://localhost:5601 (usuario `elastic`, la contraseña del `.env`).
 
-Crea el data view `macos-logs-*` con campo temporal `@timestamp`, y después:
+Después hay que crear el data view `macos-logs-*` con campo temporal `@timestamp`, y
+entonces:
 
 ```bash
 sudo ./scripts/inject-test-events.sh    # 10 eventos de prueba con IPs públicas reales
@@ -88,24 +91,26 @@ Las reglas de detección se crean siguiendo [`detection-rules/README.md`](detect
 
 ## El pipeline
 
-Logstash hace siete cosas con cada línea, y ese es el trabajo real del laboratorio:
+Logstash hace siete cosas con cada línea, y ese es el trabajo de verdad del laboratorio:
 
-1. **Grok** descompone la línea syslog en `hostname`, `process`, `pid` y `log_message`.
-2. **Normalización temporal** — el timestamp del log pasa a ser `@timestamp`, no la hora de ingesta.
-3. **Categorización** por proceso emisor.
-4. **Extracción de IP** del cuerpo del mensaje con un patrón que cubre varias redacciones.
-5. **GeoIP** sobre esa IP: país, ciudad y coordenadas, sin servicios externos.
-6. **Severidad automática** en cuatro niveles según el contenido del mensaje.
-7. **Limpieza** de los campos ya normalizados.
+1. Grok descompone la línea syslog en `hostname`, `process`, `pid` y `log_message`.
+2. Normalización temporal: el timestamp del log pasa a ser `@timestamp`, no la hora de
+   ingesta.
+3. Categorización por proceso emisor.
+4. Extracción de IP del cuerpo del mensaje con un patrón que cubre varias redacciones.
+5. GeoIP sobre esa IP: país, ciudad y coordenadas, sin servicios externos.
+6. Severidad automática en cuatro niveles según el contenido del mensaje.
+7. Limpieza de los campos ya normalizados.
 
 Los eventos sin parsear quedan marcados con `_grok_parse_failure`, así que la cobertura del
-pipeline es medible: `tags : "_grok_parse_failure"` dice cuánta visibilidad se está perdiendo.
+pipeline es medible: `tags : "_grok_parse_failure"` dice cuánta visibilidad se está
+perdiendo.
 
 ## Detección
 
-Cinco reglas en Kibana Security, cada una con su equivalente **Sigma** portable en
-[`sigma-rules/`](sigma-rules/). La regla Sigma es la fuente de verdad del detection logic;
-la de Kibana es su implementación en este SIEM concreto.
+Cinco reglas en Kibana Security, cada una con su equivalente Sigma portable en
+[`sigma-rules/`](sigma-rules/). La regla Sigma es la fuente de verdad del detection logic; la
+de Kibana es su implementación en este SIEM concreto.
 
 | Técnica | Táctica | Regla |
 |---|---|---|
@@ -129,9 +134,9 @@ exactamente las consultas de [`detection-rules/README.md`](detection-rules/READM
 ## Threat Intelligence
 
 [`scripts/enrich_ips.py`](scripts/enrich_ips.py) extrae de Elasticsearch las IPs observadas,
-descarta las privadas y reservadas, consulta **AbuseIPDB** y **VirusTotal** respetando sus
-rate limits, calcula un veredicto unificado y escribe el resultado en el índice
-`threat-intel-ips`, propagando un resumen a los documentos originales para usarlo en dashboards.
+descarta las privadas y reservadas, consulta AbuseIPDB y VirusTotal respetando sus rate
+limits, calcula un veredicto unificado y escribe el resultado en el índice `threat-intel-ips`,
+propagando un resumen a los documentos originales para usarlo en dashboards.
 
 ```bash
 export $(grep -v '^#' .env | xargs)
@@ -139,30 +144,30 @@ python3 scripts/enrich_ips.py --dry-run   # muestra lo que haría, sin escribir
 python3 scripts/enrich_ips.py
 ```
 
-Funciona con una sola de las dos API keys. Cachea los resultados para no reconsultar IPs
-ya vistas y reintenta los fallos transitorios.
+Funciona con una sola de las dos API keys. Cachea los resultados para no reconsultar IPs ya
+vistas y reintenta los fallos transitorios.
 
 ## Investigación de incidente
 
-[`docs/investigacion-portscan.md`](docs/investigacion-portscan.md) recorre un caso completo
-de principio a fin: alerta de escaneo de puertos, triaje con los indicadores que descartan el
+[`docs/investigacion-portscan.md`](docs/investigacion-portscan.md) recorre un caso completo de
+principio a fin: alerta de escaneo de puertos, triaje con los indicadores que descartan el
 falso positivo, cuatro consultas de análisis, pivoteo entre las dos IPs implicadas, mapeo
 ATT&CK, veredicto y escalado a L2 con las acciones de contención.
 
-La sección de lecciones aprendidas es deliberadamente autocrítica: la regla que disparó es
+La sección de lecciones aprendidas la escribí autocrítica a propósito: la regla que disparó es
 de coincidencia simple y debería ser de tipo `threshold`.
 
 ## Limitaciones
 
 Es un laboratorio, y conviene decir en qué se nota:
 
-- **SSL deshabilitado** entre componentes. En producción el tráfico interno de la pila va cifrado.
-- **Nodo único** de Elasticsearch, sin réplicas: el estado del clúster es `yellow` por diseño.
-- **Reglas de coincidencia simple.** Detectan la firma, no el comportamiento. Las de Brute Force
-  y Port Scan deberían ser `threshold` agrupando por `alert_ip`.
-- **Eventos de seguridad simulados.** Las IPs son públicas reales para que GeoIP resuelva, pero
-  los eventos se inyectan en el log; no hay ataque real contra la máquina.
-- **Sin correlación entre reglas.** Cada alerta se evalúa aislada.
+- SSL deshabilitado entre componentes. En producción el tráfico interno de la pila va cifrado.
+- Nodo único de Elasticsearch, sin réplicas: el estado del clúster es `yellow` por diseño.
+- Reglas de coincidencia simple. Detectan la firma, no el comportamiento. Las de Brute Force y
+  Port Scan deberían ser `threshold` agrupando por `alert_ip`.
+- Eventos de seguridad simulados. Las IPs son públicas reales para que GeoIP resuelva, pero los
+  eventos se inyectan en el log; no hay ataque real contra la máquina.
+- Sin correlación entre reglas. Cada alerta se evalúa aislada.
 
 ## Siguientes pasos
 
